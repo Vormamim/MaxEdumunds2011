@@ -20,12 +20,12 @@ init(autoreset=True)  # Resets colour after each print
 
 def start_room():
     starting_room = "your_room"
+    return starting_room
 
 def main():
     
 
-    start_room()
-    current_room = start_room
+    current_room = start_room()
     print("Current room:", current_room)
     
 
@@ -46,61 +46,79 @@ def main():
 
     shared.player ["name"] = input("What is your name? ").strip()
     print(f"Welcome, {shared.player['name']}.")
-    open_menu = input("Press 'Enter' to start the game. Type 'z' to check the controls. Type 'c' to check progress.").lower()
-
-    if open_menu == "":
-        current_location = "your_room"
-        
-
-    elif open_menu == "z":
-
-        print("Controls:")
-        print("Use the arrow keys to move.")
-        print("Press 'Enter' to interact with objects.")
-        print("Press 'Esc' to pause the game.")
-        print("Type 'c' to check your progress at any time.")
+    
+    while True:
         open_menu = input("Press 'Enter' to start the game. Type 'z' to check the controls. Type 'c' to check progress.").lower()
 
+        if open_menu == "":
+            current_location = "your_room"
+            break
 
-    elif open_menu == "c":
-        print("Progress:")
-        print(f"Your current progress is {shared.player ['progress']}%")
-        open_menu = input("Press 'Enter' to start the game. Type 'z' to check the controls. Type 'c' to check progress.").lower()
+        elif open_menu == "z":
+            print("Controls:")
+            print("Use the arrow keys to move.")
+            print("Press 'Enter' to interact with objects.")
+            print("Press 'Esc' to pause the game.")
+            print("Type 'c' to check your progress at any time.")
 
+        elif open_menu == "c":
+            print("Progress:")
+            print(f"Your current progress is {shared.player ['progress']}%")
 
-    else:
-        open_menu = input("Press 'Enter' to start the game. Type 'z' to check the controls. Type 'c' to check progress.").lower()
-
-    if current_location == "your_room":
-        print(Elissus_Rooms[current_location]["description"])
-        command = input(Elissus_Rooms[current_location]["choice"]).lower()
-        if command in ['w', 'a', 's', 'd']:
-            print(f"DEBUG: Current location before move = {shared.player['location']}")
-            shared.player["location"] == directional_choices(command)
-            print(f"DEBUG: Current location after move = {shared.player['location']}")
-           
         else:
-            print("Invalid command. Please try again.")
-            command = input(Elissus_Rooms["your_room"]["choice"]).lower()
+            print("Invalid option. Please try again.")
 
-    if current_location == 'your_wardrobe':
-        print(Elissus_Rooms["your_wardrobe"]["description"])
-        shared.player ["currency"] += 5
+    # Main game loop - handle room interactions
+    while True:
+        if current_location == "your_room":
+            print(Elissus_Rooms[current_location]["description"])
+            command = input(Elissus_Rooms[current_location]["choice"]).lower()
+            if command in ['w', 'a', 's', 'd']:
+                print(f"DEBUG: Current location before move = {shared.player['location']}")
+                new_location = directional_choices(command)
+                if new_location:
+                    shared.player["location"] = new_location
+                    current_location = new_location
+                print(f"DEBUG: Current location after move = {shared.player['location']}")
+               
+            else:
+                print("Invalid command. Please try again.")
+                continue
+
+        elif current_location == 'your_wardrobe':
+            print(Elissus_Rooms["your_wardrobe"]["description"])
+            shared.player ["currency"] += 5
+            print(f"You found 5 currency! You now have {shared.player['currency']} currency.")
+            command = input("Press any key to continue...").lower()
+            # After visiting wardrobe, return to room selection
+            current_location = "your_room"
+                
+        elif current_location == 'town_street':
+            print(Elissus_Rooms["town_street"]["description"])
+            street_choice1 = input(Elissus_Rooms["town_street"]["choice"]).lower()
             
-    elif current_location == 'town_street':
-        location = input().lower()
+            if street_choice1 == 'a':
+                print("You approach the friendly stranger.")
+                shared.player ["currency"] += 10
+                print(f"You received 10 currency! You now have {shared.player['currency']} currency.")
+                print("You thank him and head down the street.")
+            elif street_choice1 == 's':
+                print("You decide to continue down the street.")
+            else:
+                print("Invalid choice. Please try again.")
+                continue
+            
+            # After town street interaction, allow further movement
+            command = input("Where would you like to go? (w/a/s/d): ").lower()
+            if command in ['w', 'a', 's', 'd']:
+                new_location = directional_choices(command)
+                if new_location:
+                    shared.player["location"] = new_location
+                    current_location = new_location
         
-        if street_choice1 == 'a':
-            print()
-            shared.player ["currency"] += 10
-            print("You thank him and head down the street.")
-            street_choice1 = 's'
-        elif street_choice1 == 's':
-            print()
-            street_choice2 = input().lower()
         else:
-            print("Invalid command. Please try again.")
-    else:
-        print("Invalid command. Please try again.")
+            print(f"Location '{current_location}' not implemented yet.")
+            break
         
-main()
+if __name__ == "__main__":
+    main()
